@@ -137,6 +137,8 @@ def delete_desk(desk_id: UUID):
 @app.post("/classrooms", response_model=ClassroomRead, status_code=201)
 def create_classroom(classroom: ClassroomCreate):
     # Each classroom gets its own UUID; stored as ClassroomRead
+    if classroom.id in classrooms:
+        raise HTTPException(status_code=400, detail="Classroom with this ID already exists")
     classroom_read = ClassroomRead(**classroom.model_dump())
     classrooms[classroom_read.id] = classroom_read
     return classroom_read
@@ -149,7 +151,7 @@ def list_classrooms(
     label: Optional[str] = Query(None, description="Filter by label of at least one desk"),
     hand_config: Optional[str] = Query(None, description="Filter by left/right desk configuration of at least one desk"),
 ):
-    results = list(desks.values())
+    results = list(classrooms.values())
 
     if room_no is not None:
         results = [p for p in results if p.room_no == room_no]
